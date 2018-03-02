@@ -1,6 +1,8 @@
 package com.internalpositioning.find3.find3app;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -10,10 +12,12 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.SimpleAdapter;
@@ -38,24 +42,28 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import static com.internalpositioning.find3.find3app.AlarmReceiverLife.context;
+
 public class MainActivity extends AppCompatActivity {
-
-    // wifi scanning
-    private WifiManager wifi;
-    private WifiScanReceiver wifiReceiver;
-
-    // bluetooth scanning
-    private BluetoothAdapter BTAdapter = BluetoothAdapter.getDefaultAdapter();
 
     // logging
     private final String TAG = "MainActivity";
 
-    // post data request queue
-    RequestQueue queue;
-    private JSONObject jsonBody = new JSONObject();
-    private JSONObject bluetoothResults = new JSONObject();
-    private JSONObject wifiResults = new JSONObject();
 
+    // background manager
+    private PendingIntent recurringLl24 = null;
+    AlarmManager alarms = null;
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG,"MainActivity onDestroy()");
+        if (alarms != null)       alarms.cancel(recurringLl24);
+        android.app.NotificationManager mNotificationManager = (android.app.NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(0);
+        Intent scanService = new Intent(this, ScanService.class);
+        stopService(scanService);
+        super.onDestroy();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,13 +73,17 @@ public class MainActivity extends AppCompatActivity {
         // check permissions
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.INTERNET, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.CHANGE_WIFI_STATE, Manifest.permission.ACCESS_WIFI_STATE}, 1);
+            requestPermissions(new String[]{Manifest.permission.WAKE_LOCK,Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.INTERNET, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.CHANGE_WIFI_STATE, Manifest.permission.ACCESS_WIFI_STATE}, 1);
         } else {
             Toast.makeText(this, "Location permissions already granted", Toast.LENGTH_SHORT).show();
         }
 
-        queue = Volley.newRequestQueue(this);
-        registerReceiver(receiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+
+
+        // 24/7 alarm
+        Intent ll24 = new Intent(this, AlarmReceiverLife.class);
+        recurringLl24 = PendingIntent.getBroadcast(this, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
+        alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
         ToggleButton toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -79,153 +91,33 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
-                    rssi_msg.setText("");
-                    bluetoothResults = new JSONObject();
-                    wifiResults = new JSONObject();
-                    BTAdapter.startDiscovery();
-                    if (wifi.startScan()) {
-                        Log.d(TAG, "started wifi scan");
-                    } else {
-                        Log.w(TAG, "started wifi scan false?");
-                    }
-                    Log.d(TAG, "started discovery");
-                    new java.util.Timer().schedule(
-                            new java.util.TimerTask() {
-                                @Override
-                                public void run() {
-                                    // your code here
-                                    Log.d(TAG,"timer off, trying to send data");
-                                    sendData();
-                                }
-                            },
-                            10000
-                    );
+                    rssi_msg.setText("running");
+                    alarms.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.currentThreadTimeMillis(),15000,recurringLl24);
+
+                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(MainActivity.this)
+                            .setSmallIcon(R.mipmap.ic_launcher)
+                            .setContentTitle("title")
+                            .setContentText("message")
+                            .setContentIntent(recurringLl24);
+
+                    android.app.NotificationManager notificationManager =
+                            (android.app.NotificationManager) MainActivity.this.getSystemService(Context.NOTIFICATION_SERVICE);
+                    notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
                 } else {
-                    Log.d("alarmCheck", "ALARM SET TO FALSE");
+                    TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
+                    rssi_msg.setText("not running");
+                    Log.d(TAG, "toggle set to false");
+                    alarms.cancel(recurringLl24);
+                    android.app.NotificationManager mNotificationManager = (android.app.NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                    mNotificationManager.cancel(0);
                 }
             }
         });
 
 
-        // setup wifi
-        wifi = wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if (wifi.isWifiEnabled() == false) {
-            wifi.setWifiEnabled(true);
-        }
-        wifiReceiver = new WifiScanReceiver();
 
     }
 
-    protected void onPause() {
-        unregisterReceiver(wifiReceiver);
-        super.onPause();
-    }
 
-    protected void onResume() {
-        registerReceiver(
-                wifiReceiver,
-                new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
-        );
-        super.onResume();
-    }
-
-    // bluetooth reciever
-    private final BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            String action = intent.getAction();
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                String name = device.getAddress();
-                TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
-                rssi_msg.setText(rssi_msg.getText() + "bluetooth: " + name + " => " + rssi + "dBm\n");
-                try {
-                    bluetoothResults.put(name,rssi);
-                } catch (Exception e) {
-                    Log.e(TAG,e.toString());
-                }
-            }
-        }
-    };
-
-    // wifi reciever
-    private class WifiScanReceiver extends BroadcastReceiver {
-        public void onReceive(Context context, Intent intent) {
-            List<ScanResult> wifiScanList = wifi.getScanResults();
-            for (int i = 0; i < wifiScanList.size(); i++) {
-                String name = wifiScanList.get(i).BSSID;
-                int rssi = wifiScanList.get(i).level;
-                TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
-                rssi_msg.setText(rssi_msg.getText() + "wifi: " + name + " => " + rssi + "dBm\n");
-                Log.d(TAG,"wifi: " + name + " => " + rssi + "dBm");
-                try {
-                    wifiResults.put(name,rssi);
-                } catch (Exception e) {
-                    Log.e(TAG,e.toString());
-                }
-            }
-        }
-    }
-
-
-    public void sendData() {
-        try {
-            String URL = "http://192.168.0.23:8003/data";
-            jsonBody.put("f", "testfamily");
-            jsonBody.put("d", "testdevice");
-            jsonBody.put("l", "");
-            jsonBody.put("t", System.currentTimeMillis());
-            JSONObject sensors = new JSONObject();
-            sensors.put("wifi",wifiResults);
-            sensors.put("bluetooth",bluetoothResults);
-            jsonBody.put("s",sensors);
-            final String mRequestBody = jsonBody.toString();
-            Log.d(TAG,mRequestBody);
-
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
-                @Override
-                public void onResponse(String response) {
-                    Log.i("LOG_VOLLEY", response);
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.e("LOG_VOLLEY", error.toString());
-                }
-            }) {
-                @Override
-                public String getBodyContentType() {
-                    return "application/json; charset=utf-8";
-                }
-
-                @Override
-                public byte[] getBody() throws AuthFailureError {
-                    try {
-                        return mRequestBody == null ? null : mRequestBody.getBytes("utf-8");
-                    } catch (UnsupportedEncodingException uee) {
-                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", mRequestBody, "utf-8");
-                        return null;
-                    }
-                }
-
-                @Override
-                protected Response<String> parseNetworkResponse(NetworkResponse response) {
-                    String responseString = "";
-                    if (response != null) {
-
-                        responseString = String.valueOf(response.statusCode);
-
-                    }
-                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
-                }
-            };
-
-            queue.add(stringRequest);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
 
 }
