@@ -7,12 +7,19 @@
     tools:context="com.internalpositioning.find3.find3app.MainActivity">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="FIND3 Scanner"
+            />
 
         <EditText
             android:id="@+id/groupName"
@@ -21,7 +28,7 @@
             android:ems="10"
             android:gravity="center"
             android:inputType="textPersonName"
-            android:text="group" />
+            android:hint="family name" />
 
         <EditText
             android:id="@+id/deviceName"
@@ -30,7 +37,25 @@
             android:ems="10"
             android:gravity="center"
             android:inputType="textUri|textPersonName"
-            android:text="device" />
+            android:hint="device name" />
+
+        <EditText
+            android:id="@+id/serverAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:gravity="center"
+            android:inputType="textUri|textPersonName"
+            android:text="http://192.168.0.23:8003" />
+
+        <EditText
+            android:id="@+id/locationName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:gravity="center"
+            android:inputType="textUri|textPersonName"
+            android:hint="location (optional)" />
 
         <ToggleButton
             android:id="@+id/toggleButton"

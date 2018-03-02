@@ -20,6 +20,11 @@ public class AlarmReceiverLife extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.v(TAG, "Recurring alarm");
+
+        // get data
+        String groupName = intent.getStringExtra("groupName");
+        Log.d(TAG,"groupName: "+ groupName);
+
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
                 PowerManager.ACQUIRE_CAUSES_WAKEUP |
@@ -27,6 +32,7 @@ public class AlarmReceiverLife extends BroadcastReceiver {
         wakeLock.acquire();
         Intent scanService = new Intent(context, ScanService.class);
         try {
+            scanService.putExtra("groupName",groupName);
             context.startService(scanService);
         } catch (Exception e) {
             Log.w(TAG,e.toString());

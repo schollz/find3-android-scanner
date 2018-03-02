@@ -88,6 +88,8 @@ public class ScanService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
+        String groupName = intent.getStringExtra("groupName");
+        Log.d(TAG,"groupName: "+ groupName);
         new java.util.Timer().schedule(
                 new java.util.TimerTask() {
                     @Override

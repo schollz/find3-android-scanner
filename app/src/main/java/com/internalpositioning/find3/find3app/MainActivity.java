@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
     // background manager
     private PendingIntent recurringLl24 = null;
+    private Intent ll24 = null;
     AlarmManager alarms = null;
 
     @Override
@@ -81,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // 24/7 alarm
-        Intent ll24 = new Intent(this, AlarmReceiverLife.class);
+        ll24 = new Intent(this, AlarmReceiverLife.class);
         recurringLl24 = PendingIntent.getBroadcast(this, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
         alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
@@ -94,6 +96,28 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
+                    String groupName = ((EditText)findViewById(R.id.groupName)).getText().toString();
+                    if (groupName == "") {
+                        rssi_msg.setText("group name cannot be empty");
+                        return;
+                    }
+                    String serverAddress = ((EditText)findViewById(R.id.serverAddress)).getText().toString();
+                    if (serverAddress == "") {
+                        rssi_msg.setText("server address cannot be empty");
+                        return;
+                    }
+                    String deviceName = ((EditText)findViewById(R.id.deviceName)).getText().toString();
+                    if (deviceName == "") {
+                        rssi_msg.setText("device name cannot be empty");
+                        return;
+                    }
+                    String locationName = ((EditText)findViewById(R.id.locationName)).getText().toString();
+                    ll24.putExtra("groupName",groupName);
+                    ll24.putExtra("deviceName",deviceName);
+                    ll24.putExtra("serverAddress",serverAddress);
+                    ll24.putExtra("locationName",locationName);
+
+
                     rssi_msg.setText("running");
                     alarms.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.currentThreadTimeMillis(),15000,recurringLl24);
 
