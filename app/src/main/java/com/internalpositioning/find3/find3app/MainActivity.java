@@ -79,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-
         // 24/7 alarm
         Intent ll24 = new Intent(this, AlarmReceiverLife.class);
         recurringLl24 = PendingIntent.getBroadcast(this, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);

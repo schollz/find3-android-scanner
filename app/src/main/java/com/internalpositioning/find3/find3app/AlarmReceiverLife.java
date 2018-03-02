@@ -12,7 +12,7 @@ import android.util.Log;
  */
 
 public class AlarmReceiverLife extends BroadcastReceiver {
-//    private static PowerManager.WakeLock wakeLock;
+    private static PowerManager.WakeLock wakeLock;
 
     private static final String TAG = "AlarmReceiverLife";
     static Context context;
@@ -20,19 +20,20 @@ public class AlarmReceiverLife extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.v(TAG, "Recurring alarm");
-//        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-//        wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
-//                PowerManager.ACQUIRE_CAUSES_WAKEUP |
-//                PowerManager.ON_AFTER_RELEASE, "WakeLock");
-//        wakeLock.acquire();
+        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+                PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                PowerManager.ON_AFTER_RELEASE, "WakeLock");
+        wakeLock.acquire();
         Intent scanService = new Intent(context, ScanService.class);
         try {
             context.startService(scanService);
         } catch (Exception e) {
             Log.w(TAG,e.toString());
         }
-//        if (wakeLock != null) wakeLock.release();
-//        wakeLock = null;
+        Log.d(TAG,"Releasing wakelock");
+        if (wakeLock != null) wakeLock.release();
+        wakeLock = null;
     }
 
 
