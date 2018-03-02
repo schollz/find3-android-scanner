@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
+                    rssi_msg.setText("");
                     bluetoothResults = new JSONObject();
                     wifiResults = new JSONObject();
                     BTAdapter.startDiscovery();
