@@ -6,20 +6,22 @@
     android:layout_height="match_parent"
     tools:context="com.internalpositioning.find3.find3app.MainActivity">
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/relLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="453dp"
         android:gravity="center"
-        tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="8dp">
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="FIND3 Scanner"
-            />
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="66dp"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="Instructions: Enter your information and then hit 'Scan'" />
 
         <EditText
             android:id="@+id/familyName"
@@ -27,8 +29,9 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:gravity="center"
+            android:hint="family name"
             android:inputType="textPersonName"
-            android:hint="family name" />
+            android:paddingTop="-10dp" />
 
         <EditText
             android:id="@+id/deviceName"
@@ -36,8 +39,8 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:gravity="center"
-            android:inputType="textUri|textPersonName"
-            android:hint="device name" />
+            android:hint="device name"
+            android:inputType="textUri|textPersonName" />
 
         <EditText
             android:id="@+id/serverAddress"
@@ -54,23 +57,31 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:gravity="center"
-            android:inputType="textUri|textPersonName"
-            android:hint="location (optional)" />
+            android:hint="location (optional)"
+            android:inputType="textUri|textPersonName" />
 
         <ToggleButton
             android:id="@+id/toggleButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="ToggleButton" />
+            android:text="ToggleButton"
+            android:textOff="Start scan"
+            android:textOn="Stop scan"/>
 
         <TextView
             android:id="@+id/textOutput"
             android:layout_width="wrap_content"
-            android:gravity="center"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:gravity="center" />
+
+        <ProgressBar
+            style="?android:attr/progressBarStyle"
+            android:id="@+id/progressBar1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"/>
 
 
     </LinearLayout>
-
 </android.support.constraint.ConstraintLayout>

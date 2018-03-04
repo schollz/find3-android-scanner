@@ -21,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
@@ -93,18 +94,21 @@ public class MainActivity extends AppCompatActivity {
                 if (isChecked) {
                     TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
                     String familyName = ((EditText)findViewById(R.id.familyName)).getText().toString();
-                    if (familyName == "") {
-                        rssi_msg.setText("group name cannot be empty");
+                    if (familyName.equals("")) {
+                        rssi_msg.setText("family name cannot be empty");
+                        buttonView.toggle();
                         return;
                     }
                     String serverAddress = ((EditText)findViewById(R.id.serverAddress)).getText().toString();
-                    if (serverAddress == "") {
+                    if (serverAddress.equals("")) {
                         rssi_msg.setText("server address cannot be empty");
+                        buttonView.toggle();
                         return;
                     }
                     String deviceName = ((EditText)findViewById(R.id.deviceName)).getText().toString();
-                    if (deviceName == "") {
+                    if (deviceName.equals("")) {
                         rssi_msg.setText("device name cannot be empty");
+                        buttonView.toggle();
                         return;
                     }
 
@@ -114,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                     rssi_msg.setText("running");
                     // 24/7 alarm
                     ll24 = new Intent(MainActivity.this, AlarmReceiverLife.class);
-                    Log.d(TAG,"setting familyName to " + familyName);
+                    Log.d(TAG,"setting familyName to [" + familyName +"]");
                     ll24.putExtra("familyName",familyName);
                     ll24.putExtra("deviceName",deviceName);
                     ll24.putExtra("serverAddress",serverAddress);
@@ -132,7 +136,10 @@ public class MainActivity extends AppCompatActivity {
                     android.app.NotificationManager notificationManager =
                             (android.app.NotificationManager) MainActivity.this.getSystemService(Context.NOTIFICATION_SERVICE);
                     notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+
+                    findViewById((R.id.progressBar1)).setVisibility(View.VISIBLE);
                 } else {
+                    findViewById((R.id.progressBar1)).setVisibility(View.INVISIBLE);
                     TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
                     rssi_msg.setText("not running");
                     Log.d(TAG, "toggle set to false");
