@@ -1,5 +1,6 @@
 package com.internalpositioning.find3.find3app;
 
+import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -13,6 +14,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.android.volley.AuthFailureError;
@@ -60,6 +62,12 @@ public class ScanService extends Service {
     private JSONObject bluetoothResults = new JSONObject();
     private JSONObject wifiResults = new JSONObject();
 
+
+    private String familyName= "";
+    private String locationName = "";
+    private String deviceName = "";
+    private String serverAddress = "";
+
     @Override
     public void onCreate() {
         // The service is being created
@@ -87,9 +95,12 @@ public class ScanService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
+        deviceName = intent.getStringExtra("deviceName");
+        familyName = intent.getStringExtra("familyName");
+        locationName = intent.getStringExtra("locationName");
+        serverAddress = intent.getStringExtra("serverAddress");
+        Log.d(TAG,"familyName: "+ familyName);
 
-        String groupName = intent.getStringExtra("groupName");
-        Log.d(TAG,"groupName: "+ groupName);
         new java.util.Timer().schedule(
                 new java.util.TimerTask() {
                     @Override
@@ -190,7 +201,7 @@ public class ScanService extends Service {
                         }
                     }
                 },
-                15000
+                5000
         );
     }
 
@@ -218,10 +229,10 @@ public class ScanService extends Service {
 
     public void sendData() {
         try {
-            String URL = "http://192.168.0.23:8003/data";
-            jsonBody.put("f", "testfamily");
-            jsonBody.put("d", "testdevice");
-            jsonBody.put("l", "");
+            String URL = serverAddress + "/data";
+            jsonBody.put("f", familyName);
+            jsonBody.put("d", deviceName);
+            jsonBody.put("l", locationName);
             jsonBody.put("t", System.currentTimeMillis());
             JSONObject sensors = new JSONObject();
             sensors.put("bluetooth", bluetoothResults);

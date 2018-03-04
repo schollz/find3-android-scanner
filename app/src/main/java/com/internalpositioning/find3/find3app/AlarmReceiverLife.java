@@ -22,8 +22,11 @@ public class AlarmReceiverLife extends BroadcastReceiver {
         Log.v(TAG, "Recurring alarm");
 
         // get data
-        String groupName = intent.getStringExtra("groupName");
-        Log.d(TAG,"groupName: "+ groupName);
+        String familyName = intent.getStringExtra("familyName");
+        String deviceName = intent.getStringExtra("deviceName");
+        String locationName = intent.getStringExtra("locationName");
+        String serverAddress = intent.getStringExtra("serverAddress");
+        Log.d(TAG,"familyName: "+ familyName);
 
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
@@ -31,8 +34,11 @@ public class AlarmReceiverLife extends BroadcastReceiver {
                 PowerManager.ON_AFTER_RELEASE, "WakeLock");
         wakeLock.acquire();
         Intent scanService = new Intent(context, ScanService.class);
+        scanService.putExtra("familyName",familyName);
+        scanService.putExtra("deviceName",deviceName);
+        scanService.putExtra("locationName",locationName);
+        scanService.putExtra("serverAddress",serverAddress);
         try {
-            scanService.putExtra("groupName",groupName);
             context.startService(scanService);
         } catch (Exception e) {
             Log.w(TAG,e.toString());

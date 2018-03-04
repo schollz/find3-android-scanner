@@ -22,7 +22,7 @@
             />
 
         <EditText
-            android:id="@+id/groupName"
+            android:id="@+id/familyName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ems="10"

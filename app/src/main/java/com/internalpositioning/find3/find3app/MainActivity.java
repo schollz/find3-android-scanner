@@ -82,11 +82,6 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions(new String[]{Manifest.permission.WAKE_LOCK,Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.INTERNET, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.CHANGE_WIFI_STATE, Manifest.permission.ACCESS_WIFI_STATE}, 1);
         }
 
-        // 24/7 alarm
-        ll24 = new Intent(this, AlarmReceiverLife.class);
-        recurringLl24 = PendingIntent.getBroadcast(this, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
-        alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
         TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
         rssi_msg.setText("not running");
 
@@ -96,8 +91,8 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
-                    String groupName = ((EditText)findViewById(R.id.groupName)).getText().toString();
-                    if (groupName == "") {
+                    String familyName = ((EditText)findViewById(R.id.familyName)).getText().toString();
+                    if (familyName == "") {
                         rssi_msg.setText("group name cannot be empty");
                         return;
                     }
@@ -111,14 +106,21 @@ public class MainActivity extends AppCompatActivity {
                         rssi_msg.setText("device name cannot be empty");
                         return;
                     }
+
                     String locationName = ((EditText)findViewById(R.id.locationName)).getText().toString();
-                    ll24.putExtra("groupName",groupName);
-                    ll24.putExtra("deviceName",deviceName);
-                    ll24.putExtra("serverAddress",serverAddress);
-                    ll24.putExtra("locationName",locationName);
 
 
                     rssi_msg.setText("running");
+                    // 24/7 alarm
+                    ll24 = new Intent(MainActivity.this, AlarmReceiverLife.class);
+                    Log.d(TAG,"setting familyName to " + familyName);
+                    ll24.putExtra("familyName",familyName);
+                    ll24.putExtra("deviceName",deviceName);
+                    ll24.putExtra("serverAddress",serverAddress);
+                    ll24.putExtra("locationName",locationName);
+                    recurringLl24 = PendingIntent.getBroadcast(MainActivity.this, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
+                    alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
                     alarms.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.currentThreadTimeMillis(),15000,recurringLl24);
 
                     NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(MainActivity.this)
@@ -136,6 +138,8 @@ public class MainActivity extends AppCompatActivity {
                     alarms.cancel(recurringLl24);
                     android.app.NotificationManager mNotificationManager = (android.app.NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                     mNotificationManager.cancel(0);
+                    Intent scanService = new Intent(MainActivity.this, ScanService.class);
+                    stopService(scanService);
                 }
             }
         });
