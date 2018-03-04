@@ -63,7 +63,7 @@ public class ScanService extends Service {
     private JSONObject wifiResults = new JSONObject();
 
 
-    private String familyName= "";
+    private String familyName = "";
     private String locationName = "";
     private String deviceName = "";
     private String serverAddress = "";
@@ -99,29 +99,50 @@ public class ScanService extends Service {
         familyName = intent.getStringExtra("familyName");
         locationName = intent.getStringExtra("locationName");
         serverAddress = intent.getStringExtra("serverAddress");
-        Log.d(TAG,"familyName: "+ familyName);
+        Log.d(TAG, "familyName: " + familyName);
 
         new java.util.Timer().schedule(
                 new java.util.TimerTask() {
                     @Override
                     public void run() {
-                        // your code here
-                        while (true) {
-                            synchronized (lock) {
-                                if (isScanning == true ) {
-                                    try {
-                                        Thread.sleep(500);
-                                    } catch (Exception e) {
-                                        Log.w(TAG,e.toString());
-                                    }
-                                    continue;
-                                }
+                        synchronized (lock) {
+                            if (isScanning == false) {
+                                doScan();
                             }
-                            doScan();
                         }
                     }
                 },
                 0
+        );
+
+
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        synchronized (lock) {
+                            if (isScanning == false) {
+                                doScan();
+                            }
+                        }
+                    }
+                },
+                10000
+        );
+
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        synchronized (lock) {
+                            if (isScanning == false) {
+                                doScan();
+                            }
+                        }
+                        stopSelf(); // stop the service
+                    }
+                },
+                10000
         );
 
         return START_STICKY;
@@ -148,13 +169,14 @@ public class ScanService extends Service {
     @Override
     public void onDestroy() {
         // The service is no longer used and is being destroyed
-        Log.v(TAG,"onDestroy");
+        Log.v(TAG, "onDestroy");
         try {
             if (receiver != null)
                 unregisterReceiver(receiver);
         } catch (Exception e) {
-            Log.w(TAG,e.toString());
+            Log.w(TAG, e.toString());
         }
+        stopSelf();
         super.onDestroy();
 
     }
@@ -201,7 +223,7 @@ public class ScanService extends Service {
                         }
                     }
                 },
-                5000
+                9000
         );
     }
 

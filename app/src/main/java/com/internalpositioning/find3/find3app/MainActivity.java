@@ -43,6 +43,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import static com.internalpositioning.find3.find3app.AlarmReceiverLife.context;
@@ -120,8 +121,8 @@ public class MainActivity extends AppCompatActivity {
                     ll24.putExtra("locationName",locationName);
                     recurringLl24 = PendingIntent.getBroadcast(MainActivity.this, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
                     alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                    alarms.setRepeating(AlarmManager.RTC_WAKEUP,SystemClock.currentThreadTimeMillis(),60000,recurringLl24);
 
-                    alarms.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.currentThreadTimeMillis(),15000,recurringLl24);
 
                     NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(MainActivity.this)
                             .setSmallIcon(R.mipmap.ic_launcher)
@@ -138,8 +139,8 @@ public class MainActivity extends AppCompatActivity {
                     alarms.cancel(recurringLl24);
                     android.app.NotificationManager mNotificationManager = (android.app.NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                     mNotificationManager.cancel(0);
-                    Intent scanService = new Intent(MainActivity.this, ScanService.class);
-                    stopService(scanService);
+//                    Intent scanService = new Intent(MainActivity.this, ScanService.class);
+//                    stopService(scanService);
                 }
             }
         });
