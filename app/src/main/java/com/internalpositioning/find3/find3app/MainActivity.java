@@ -306,6 +306,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onError(Exception e) {
                 Log.i("Websocket", "Error " + e.getMessage());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
+                        rssi_msg.setText("cannot connect to server, fingerprints will not be uploaded");
+                    }
+                });
             }
         };
         mWebSocketClient.connect();
