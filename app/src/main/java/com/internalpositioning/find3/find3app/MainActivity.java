@@ -22,6 +22,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -50,6 +51,8 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Timer;
@@ -194,7 +197,6 @@ public class MainActivity extends AppCompatActivity {
                     android.app.NotificationManager mNotificationManager = (android.app.NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                     mNotificationManager.cancel(0);
                     timer.cancel();
-                    mWebSocketClient.close();
                 }
             }
         });
@@ -232,13 +234,66 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Log.d("Websocket","message: "+ message);
+                        JSONObject json = null;
+                        JSONObject fingerprint = null;
+                        JSONObject sensors = null;
+                        JSONObject bluetooth = null;
+                        JSONObject wifi = null;
+                        String deviceName = "";
+                        String locationName = "";
+                        String familyName = "";
                         try {
-                            JSONObject json = new JSONObject(message);
-                            Log.d("Websocket","json: " + json.toString());
-                            Log.d("Websocket","json: " + json.get("sensors").toString());
+                            json = new JSONObject(message);
+                        } catch (Exception e) {
+                            Log.d("Websocket","json error: "+ e.toString());
+                            return;
+                        }
+                        try {
+                            fingerprint = new JSONObject(json.get("sensors").toString());
+                            Log.d("Websocket","fingerprint: " + fingerprint);
                         } catch (Exception e) {
                             Log.d("Websocket","json error: "+ e.toString());
                         }
+                        try {
+                            sensors = new JSONObject(fingerprint.get("s").toString());
+                            deviceName = fingerprint.get("d").toString();
+                            familyName = fingerprint.get("f").toString();
+                            locationName = fingerprint.get("l").toString();
+                            Log.d("Websocket","sensors: " + sensors);
+                        } catch (Exception e) {
+                            Log.d("Websocket","json error: "+ e.toString());
+                        }
+                        try {
+                            wifi = new JSONObject(sensors.get("wifi").toString());
+                            Log.d("Websocket","wifi: " + wifi);
+                        } catch (Exception e) {
+                            Log.d("Websocket","json error: "+ e.toString());
+                        }
+                        try {
+                            bluetooth = new JSONObject(sensors.get("bluetooth").toString());
+                            Log.d("Websocket","bluetooth: " + bluetooth);
+                        } catch (Exception e) {
+                            Log.d("Websocket","json error: "+ e.toString());
+                        }
+                        Log.d("Websocket",bluetooth.toString());
+                        Integer bluetoothPoints = bluetooth.length();
+                        Integer wifiPoints = wifi.length();
+                        Long secondsAgo = null;
+                        try {
+                           secondsAgo= fingerprint.getLong("t");
+                        } catch (Exception e) {
+                            Log.w("Websocket",e);
+                        }
+                        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd HH:mm:ss");
+                        Date resultdate = new Date(secondsAgo);
+                        String message = sdf.format(resultdate) + ": " + bluetoothPoints.toString() + " bluetooth and " + wifiPoints.toString() + " wifi points inserted for " + familyName + "/" + deviceName;
+                        if (locationName.equals("") == false) {
+                            message += " at " + locationName;
+                        }
+                        TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
+                        Log.d("Websocket",message);
+                        rssi_msg.setText(message);
+
                     }
                 });
             }
