@@ -4,9 +4,9 @@ android {
     compileSdkVersion 24
     defaultConfig {
         applicationId "com.internalpositioning.find3.find3app"
-        minSdkVersion 24
+        minSdkVersion 23
         targetSdkVersion 24
-        versionCode 2
+        versionCode 3
         versionName "3.0.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

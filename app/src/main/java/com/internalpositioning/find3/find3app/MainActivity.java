@@ -133,6 +133,24 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        ToggleButton toggleButtonTracking = (ToggleButton) findViewById(R.id.toggleScanType);
+        toggleButtonTracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                findViewById((R.id.progressBar1)).setVisibility(View.INVISIBLE);
+                TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
+                rssi_msg.setText("not running");
+                Log.d(TAG, "toggle set to false");
+                if (alarms != null) alarms.cancel(recurringLl24);
+                android.app.NotificationManager mNotificationManager = (android.app.NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                mNotificationManager.cancel(0);
+                if (timer != null) timer.cancel();
+
+                CompoundButton scanButton = (CompoundButton) findViewById(R.id.toggleButton);
+                scanButton.setChecked(false);
+            }
+        });
+
         ToggleButton toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -160,6 +178,17 @@ public class MainActivity extends AppCompatActivity {
 
                     String locationName = ((EditText) findViewById(R.id.locationName)).getText().toString();
 
+                    CompoundButton trackingButton = (CompoundButton) findViewById(R.id.toggleScanType);
+                    if (trackingButton.isChecked() == false) {
+                        locationName = "";
+                    } else {
+                        if (locationName.equals("")) {
+                            rssi_msg.setText("location name cannot be empty when learning");
+                            buttonView.toggle();
+                            return;
+                        }
+                    }
+
                     SharedPreferences sharedPref = MainActivity.this.getPreferences(Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPref.edit();
                     editor.putString("familyName", familyName);
@@ -179,7 +208,10 @@ public class MainActivity extends AppCompatActivity {
                     recurringLl24 = PendingIntent.getBroadcast(MainActivity.this, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
                     alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                     alarms.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.currentThreadTimeMillis(), 60000, recurringLl24);
-
+                    findViewById((R.id.progressBar1)).setVisibility(View.VISIBLE);
+                    timer = new Timer();
+                    timer.scheduleAtFixedRate(new RemindTask(), 1000, 1000);
+                    connectWebSocket();
 
                     String scanningMessage = "Scanning for " + familyName + "/" + deviceName;
                     if (locationName.equals("") == false) {
@@ -200,10 +232,6 @@ public class MainActivity extends AppCompatActivity {
                             (android.app.NotificationManager) MainActivity.this.getSystemService(Context.NOTIFICATION_SERVICE);
                     notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
 
-                    findViewById((R.id.progressBar1)).setVisibility(View.VISIBLE);
-                    timer = new Timer();
-                    timer.scheduleAtFixedRate(new RemindTask(), 1000, 1000);
-                    connectWebSocket();
 
                     final TextView myClickableUrl = (TextView) findViewById(R.id.textInstructions);
                     myClickableUrl.setText("See your results in realtime: " + serverAddress + "/view/location/" + familyName + "/" + deviceName);
@@ -302,6 +330,10 @@ public class MainActivity extends AppCompatActivity {
                             secondsAgo = fingerprint.getLong("t");
                         } catch (Exception e) {
                             Log.w("Websocket", e);
+                        }
+
+                        if ((System.currentTimeMillis() - secondsAgo)/1000 > 3) {
+                            return;
                         }
                         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd HH:mm:ss");
                         Date resultdate = new Date(secondsAgo);

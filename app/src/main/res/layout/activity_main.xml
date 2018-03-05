@@ -29,30 +29,64 @@
             android:id="@+id/textInstructions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
             android:paddingLeft="32dp"
             android:paddingRight="32dp"
-            android:paddingBottom="16dp"
             android:paddingTop="16dp"
             android:text="Instructions: Enter your family name, device and then press 'Scan' and wait. FIND3 Scanner will evaluate the distance to all nearby bluetooth and WiFi devices." />
-
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/relLayout6"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/familyLabel"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="Family:" />
         <EditText
             android:id="@+id/familyName"
             android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:ems="10"
             android:gravity="center"
-            android:hint="family name"
             android:inputType="textPersonName"
             android:paddingTop="-10dp" />
+    </LinearLayout>
 
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/relLayout5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/deviceLabel"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="Device:" />
         <EditText
             android:id="@+id/deviceName"
             android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:ems="10"
             android:gravity="center"
-            android:hint="device name"
             android:inputType="textUri|textPersonName" />
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/relLayout4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/serverLabel"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="Server:" />
 
         <EditText
             android:id="@+id/serverAddress"
@@ -61,26 +95,59 @@
             android:ems="10"
             android:gravity="center"
             android:inputType="textUri|textPersonName"
-            android:text="https://find3.internalpositioning.com"
+            android:text="http://192.168.0.23:8003"
             android:textSize="12sp" />
 
-        <EditText
-            android:id="@+id/locationName"
-            android:layout_width="220dp"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:gravity="center"
-            android:hint="location (optional)"
-            android:inputType="textUri|textPersonName" />
+    </LinearLayout>
 
-        <ToggleButton
-            android:id="@+id/toggleButton"
-            android:layout_width="wrap_content"
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/relLayout3"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="ToggleButton"
-            android:textOff="Start scan"
-            android:textOn="Stop scan" />
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/locationLabel"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Location (optional):" />
+
+            <EditText
+                android:id="@+id/locationName"
+                android:layout_width="220dp"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:gravity="center"
+                android:inputType="textUri|textPersonName" />
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/relLayout2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="10dp"
+            android:orientation="horizontal">
+
+            <ToggleButton
+                android:id="@+id/toggleScanType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="ToggleButton"
+                android:textOff="Tracking"
+                android:textOn="Learning" />
+
+            <ToggleButton
+                android:id="@+id/toggleButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="ToggleButton"
+                android:textOff="Start scan"
+                android:textOn="Stop scan" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/textOutput"
@@ -88,9 +155,9 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:paddingBottom="16dp"
-            android:paddingTop="16dp"
             android:paddingLeft="32dp"
-            android:paddingRight="32dp" />
+            android:paddingRight="32dp"
+            android:paddingTop="16dp" />
 
         <ProgressBar
             android:id="@+id/progressBar1"
