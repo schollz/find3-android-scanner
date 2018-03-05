@@ -28,16 +28,16 @@
         <TextView
             android:id="@+id/textInstructions"
             android:layout_width="match_parent"
-            android:layout_height="66dp"
+            android:layout_height="wrap_content"
             android:paddingLeft="32dp"
             android:paddingRight="32dp"
             android:paddingBottom="16dp"
             android:paddingTop="16dp"
-            android:text="Instructions: Enter your family name, device and then press 'Scan' and wait." />
+            android:text="Instructions: Enter your family name, device and then press 'Scan' and wait. FIND3 Scanner will evaluate the distance to all nearby bluetooth and WiFi devices." />
 
         <EditText
             android:id="@+id/familyName"
-            android:layout_width="wrap_content"
+            android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:ems="10"
             android:gravity="center"
@@ -47,7 +47,7 @@
 
         <EditText
             android:id="@+id/deviceName"
-            android:layout_width="wrap_content"
+            android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:ems="10"
             android:gravity="center"
@@ -56,16 +56,17 @@
 
         <EditText
             android:id="@+id/serverAddress"
-            android:layout_width="wrap_content"
+            android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:ems="10"
             android:gravity="center"
             android:inputType="textUri|textPersonName"
-            android:text="http://192.168.0.23:8003" />
+            android:text="https://find3.internalpositioning.com"
+            android:textSize="12sp" />
 
         <EditText
             android:id="@+id/locationName"
-            android:layout_width="wrap_content"
+            android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:ems="10"
             android:gravity="center"
