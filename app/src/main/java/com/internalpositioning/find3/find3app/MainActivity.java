@@ -71,13 +71,17 @@ public class MainActivity extends AppCompatActivity {
     private PendingIntent recurringLl24 = null;
     private Intent ll24 = null;
     AlarmManager alarms = null;
-
+    WebSocketClient mWebSocketClient = null;
     Timer timer = null;
 
     @Override
     protected void onDestroy() {
         Log.d(TAG, "MainActivity onDestroy()");
         if (alarms != null) alarms.cancel(recurringLl24);
+        if (timer != null) timer.cancel();
+        if (mWebSocketClient != null) {
+            mWebSocketClient.close();
+        }
         android.app.NotificationManager mNotificationManager = (android.app.NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(0);
         Intent scanService = new Intent(this, ScanService.class);
@@ -113,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
 
         class RemindTask extends TimerTask {
             private Integer counter = 0;
+
             public void run() {
                 runOnUiThread(new Runnable() {
                     @Override
@@ -175,18 +180,28 @@ public class MainActivity extends AppCompatActivity {
                     alarms.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.currentThreadTimeMillis(), 60000, recurringLl24);
 
 
+                    String scanningMessage = "Scanning for " + familyName + "/" + deviceName;
+                    if (locationName.equals("") == false) {
+                        scanningMessage += " at " + locationName;
+                    }
                     NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(MainActivity.this)
-                            .setSmallIcon(R.mipmap.ic_launcher)
-                            .setContentTitle("title")
-                            .setContentText("message")
+                            .setSmallIcon(R.drawable.ic_stat_name)
+                            .setContentTitle(scanningMessage)
                             .setContentIntent(recurringLl24);
+                    //specifying an action and its category to be triggered once clicked on the notification
+                    Intent resultIntent = new Intent(MainActivity.this, MainActivity.class);
+                    resultIntent.setAction("android.intent.action.MAIN");
+                    resultIntent.addCategory("android.intent.category.LAUNCHER");
+                    PendingIntent resultPendingIntent = PendingIntent.getActivity(MainActivity.this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    notificationBuilder.setContentIntent(resultPendingIntent);
+
                     android.app.NotificationManager notificationManager =
                             (android.app.NotificationManager) MainActivity.this.getSystemService(Context.NOTIFICATION_SERVICE);
                     notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
 
                     findViewById((R.id.progressBar1)).setVisibility(View.VISIBLE);
-                    timer= new Timer();
-                    timer.scheduleAtFixedRate(new RemindTask(),1000,1000);
+                    timer = new Timer();
+                    timer.scheduleAtFixedRate(new RemindTask(), 1000, 1000);
                     connectWebSocket();
                 } else {
                     findViewById((R.id.progressBar1)).setVisibility(View.INVISIBLE);
@@ -204,7 +219,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    WebSocketClient mWebSocketClient = null;
 
     private void connectWebSocket() {
         URI uri;
@@ -212,9 +226,9 @@ public class MainActivity extends AppCompatActivity {
             String serverAddress = ((EditText) findViewById(R.id.serverAddress)).getText().toString();
             String familyName = ((EditText) findViewById(R.id.familyName)).getText().toString();
             String deviceName = ((EditText) findViewById(R.id.deviceName)).getText().toString();
-            serverAddress = serverAddress.replace("http","ws");
-            uri = new URI(serverAddress + "/ws?family="+familyName+"&device="+deviceName );
-            Log.d("Websocket","connect to websocket at " + uri.toString());
+            serverAddress = serverAddress.replace("http", "ws");
+            uri = new URI(serverAddress + "/ws?family=" + familyName + "&device=" + deviceName);
+            Log.d("Websocket", "connect to websocket at " + uri.toString());
         } catch (URISyntaxException e) {
             e.printStackTrace();
             return;
@@ -233,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d("Websocket","message: "+ message);
+                        Log.d("Websocket", "message: " + message);
                         JSONObject json = null;
                         JSONObject fingerprint = null;
                         JSONObject sensors = null;
@@ -245,44 +259,44 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             json = new JSONObject(message);
                         } catch (Exception e) {
-                            Log.d("Websocket","json error: "+ e.toString());
+                            Log.d("Websocket", "json error: " + e.toString());
                             return;
                         }
                         try {
                             fingerprint = new JSONObject(json.get("sensors").toString());
-                            Log.d("Websocket","fingerprint: " + fingerprint);
+                            Log.d("Websocket", "fingerprint: " + fingerprint);
                         } catch (Exception e) {
-                            Log.d("Websocket","json error: "+ e.toString());
+                            Log.d("Websocket", "json error: " + e.toString());
                         }
                         try {
                             sensors = new JSONObject(fingerprint.get("s").toString());
                             deviceName = fingerprint.get("d").toString();
                             familyName = fingerprint.get("f").toString();
                             locationName = fingerprint.get("l").toString();
-                            Log.d("Websocket","sensors: " + sensors);
+                            Log.d("Websocket", "sensors: " + sensors);
                         } catch (Exception e) {
-                            Log.d("Websocket","json error: "+ e.toString());
+                            Log.d("Websocket", "json error: " + e.toString());
                         }
                         try {
                             wifi = new JSONObject(sensors.get("wifi").toString());
-                            Log.d("Websocket","wifi: " + wifi);
+                            Log.d("Websocket", "wifi: " + wifi);
                         } catch (Exception e) {
-                            Log.d("Websocket","json error: "+ e.toString());
+                            Log.d("Websocket", "json error: " + e.toString());
                         }
                         try {
                             bluetooth = new JSONObject(sensors.get("bluetooth").toString());
-                            Log.d("Websocket","bluetooth: " + bluetooth);
+                            Log.d("Websocket", "bluetooth: " + bluetooth);
                         } catch (Exception e) {
-                            Log.d("Websocket","json error: "+ e.toString());
+                            Log.d("Websocket", "json error: " + e.toString());
                         }
-                        Log.d("Websocket",bluetooth.toString());
+                        Log.d("Websocket", bluetooth.toString());
                         Integer bluetoothPoints = bluetooth.length();
                         Integer wifiPoints = wifi.length();
                         Long secondsAgo = null;
                         try {
-                           secondsAgo= fingerprint.getLong("t");
+                            secondsAgo = fingerprint.getLong("t");
                         } catch (Exception e) {
-                            Log.w("Websocket",e);
+                            Log.w("Websocket", e);
                         }
                         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd HH:mm:ss");
                         Date resultdate = new Date(secondsAgo);
@@ -291,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
                             message += " at " + locationName;
                         }
                         TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
-                        Log.d("Websocket",message);
+                        Log.d("Websocket", message);
                         rssi_msg.setText(message);
 
                     }
@@ -317,7 +331,6 @@ public class MainActivity extends AppCompatActivity {
         };
         mWebSocketClient.connect();
     }
-
 
 
 }
