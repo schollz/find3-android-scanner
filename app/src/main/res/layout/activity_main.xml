@@ -17,8 +17,8 @@
 
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="204dp"
-            android:layout_height="180dp"
+            android:layout_width="176dp"
+            android:layout_height="140dp"
             android:adjustViewBounds="true"
             android:paddingBottom="16dp"
             android:paddingTop="16dp"
@@ -26,14 +26,14 @@
             app:srcCompat="@drawable/ic_find3_01" />
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/textInstructions"
             android:layout_width="match_parent"
             android:layout_height="66dp"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
+            android:paddingLeft="32dp"
+            android:paddingRight="32dp"
             android:paddingBottom="16dp"
             android:paddingTop="16dp"
-            android:text="Instructions: Enter your information and then hit 'Scan'" />
+            android:text="Instructions: Enter your family name, device and then press 'Scan' and wait." />
 
         <EditText
             android:id="@+id/familyName"
@@ -86,8 +86,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp" />
+            android:paddingBottom="16dp"
+            android:paddingTop="16dp"
+            android:paddingLeft="32dp"
+            android:paddingRight="32dp" />
 
         <ProgressBar
             android:id="@+id/progressBar1"

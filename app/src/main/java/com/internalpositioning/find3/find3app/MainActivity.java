@@ -23,6 +23,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -203,6 +204,10 @@ public class MainActivity extends AppCompatActivity {
                     timer = new Timer();
                     timer.scheduleAtFixedRate(new RemindTask(), 1000, 1000);
                     connectWebSocket();
+
+                    final TextView myClickableUrl = (TextView) findViewById(R.id.textInstructions);
+                    myClickableUrl.setText("See your results in realtime: " + serverAddress + "/view/location/" + familyName + "/" + deviceName);
+                    Linkify.addLinks(myClickableUrl, Linkify.WEB_URLS);
                 } else {
                     findViewById((R.id.progressBar1)).setVisibility(View.INVISIBLE);
                     TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
