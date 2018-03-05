@@ -9,11 +9,21 @@
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/relLayout1"
         android:layout_width="match_parent"
-        android:layout_height="453dp"
+        android:layout_height="530dp"
         android:gravity="center"
         android:orientation="vertical"
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="204dp"
+            android:layout_height="180dp"
+            android:adjustViewBounds="true"
+            android:paddingBottom="16dp"
+            android:paddingTop="16dp"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/ic_find3_01" />
 
         <TextView
             android:id="@+id/textView"
@@ -21,6 +31,8 @@
             android:layout_height="66dp"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
+            android:paddingBottom="16dp"
+            android:paddingTop="16dp"
             android:text="Instructions: Enter your information and then hit 'Scan'" />
 
         <EditText
@@ -67,23 +79,24 @@
             android:gravity="center"
             android:text="ToggleButton"
             android:textOff="Start scan"
-            android:textOn="Stop scan"/>
+            android:textOn="Stop scan" />
 
         <TextView
             android:id="@+id/textOutput"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:paddingLeft="16dp"
-            android:paddingRight="16dp"
-            android:gravity="center" />
+            android:paddingRight="16dp" />
 
         <ProgressBar
-            style="?android:attr/progressBarStyle"
             android:id="@+id/progressBar1"
+            style="?android:attr/progressBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="invisible"/>
+            android:visibility="invisible" />
 
 
     </LinearLayout>
+
 </android.support.constraint.ConstraintLayout>
