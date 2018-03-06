@@ -26,6 +26,8 @@ import android.text.TextUtils;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
@@ -75,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
     WebSocketClient mWebSocketClient = null;
     Timer timer = null;
 
+    private String[] autocompleteLocations = new String[] {"bedroom","living room","kitchen","bathroom", "office"};
+
     @Override
     protected void onDestroy() {
         Log.d(TAG, "MainActivity onDestroy()");
@@ -115,6 +119,12 @@ public class MainActivity extends AppCompatActivity {
         deviceNameEdit.setText(sharedPref.getString("deviceName", ""));
         EditText serverAddressEdit = (EditText) findViewById(R.id.serverAddress);
         serverAddressEdit.setText(sharedPref.getString("serverAddress", ((EditText) findViewById(R.id.serverAddress)).getText().toString()));
+
+
+        AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.locationName);
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, autocompleteLocations);
+        textView.setAdapter(adapter);
 
         class RemindTask extends TimerTask {
             private Integer counter = 0;
@@ -157,26 +167,26 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
-                    String familyName = ((EditText) findViewById(R.id.familyName)).getText().toString();
+                    String familyName = ((EditText) findViewById(R.id.familyName)).getText().toString().toLowerCase();
                     if (familyName.equals("")) {
                         rssi_msg.setText("family name cannot be empty");
                         buttonView.toggle();
                         return;
                     }
-                    String serverAddress = ((EditText) findViewById(R.id.serverAddress)).getText().toString();
+                    String serverAddress = ((EditText) findViewById(R.id.serverAddress)).getText().toString().toLowerCase();
                     if (serverAddress.equals("")) {
                         rssi_msg.setText("server address cannot be empty");
                         buttonView.toggle();
                         return;
                     }
-                    String deviceName = ((EditText) findViewById(R.id.deviceName)).getText().toString();
+                    String deviceName = ((EditText) findViewById(R.id.deviceName)).getText().toString().toLowerCase();
                     if (deviceName.equals("")) {
                         rssi_msg.setText("device name cannot be empty");
                         buttonView.toggle();
                         return;
                     }
 
-                    String locationName = ((EditText) findViewById(R.id.locationName)).getText().toString();
+                    String locationName = ((EditText) findViewById(R.id.locationName)).getText().toString().toLowerCase();
 
                     CompoundButton trackingButton = (CompoundButton) findViewById(R.id.toggleScanType);
                     if (trackingButton.isChecked() == false) {
