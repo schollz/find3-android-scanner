@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     AlarmManager alarms = null;
     WebSocketClient mWebSocketClient = null;
     Timer timer = null;
+    private RemindTask oneSecondTimer = null;
 
     private String[] autocompleteLocations = new String[] {"bedroom","living room","kitchen","bathroom", "office"};
 
@@ -78,6 +79,30 @@ public class MainActivity extends AppCompatActivity {
         stopService(scanService);
         super.onDestroy();
     }
+
+    class RemindTask extends TimerTask {
+        private Integer counter = 0;
+
+        public void resetCounter() {
+            counter = 0;
+        }
+        public void run() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    counter++;
+                    if (mWebSocketClient != null) {
+                        if (mWebSocketClient.isClosed()) {
+                            connectWebSocket();
+                        }
+                    }
+                    TextView rssi_msg = (TextView) findViewById(R.id.secondsAgo);
+                    rssi_msg.setText(counter + " seconds ago: ");
+                }
+            });
+        }
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,22 +136,6 @@ public class MainActivity extends AppCompatActivity {
                 new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, autocompleteLocations);
         textView.setAdapter(adapter);
 
-        class RemindTask extends TimerTask {
-            private Integer counter = 0;
-
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mWebSocketClient != null) {
-                            if (mWebSocketClient.isClosed()) {
-                                connectWebSocket();
-                            }
-                        }
-                    }
-                });
-            }
-        }
 
         ToggleButton toggleButtonTracking = (ToggleButton) findViewById(R.id.toggleScanType);
         toggleButtonTracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -208,7 +217,8 @@ public class MainActivity extends AppCompatActivity {
                     alarms.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.currentThreadTimeMillis(), 60000, recurringLl24);
                     findViewById((R.id.progressBar1)).setVisibility(View.VISIBLE);
                     timer = new Timer();
-                    timer.scheduleAtFixedRate(new RemindTask(), 1000, 1000);
+                    oneSecondTimer = new RemindTask();
+                    timer.scheduleAtFixedRate(oneSecondTimer, 1000, 1000);
                     connectWebSocket();
 
                     String scanningMessage = "Scanning for " + familyName + "/" + deviceName;
@@ -336,7 +346,8 @@ public class MainActivity extends AppCompatActivity {
                         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd HH:mm:ss");
                         Date resultdate = new Date(secondsAgo);
 //                        String message = sdf.format(resultdate) + ": " + bluetoothPoints.toString() + " bluetooth and " + wifiPoints.toString() + " wifi points inserted for " + familyName + "/" + deviceName;
-                        String message = Long.toString((System.currentTimeMillis() - secondsAgo)/1000) + " seconds ago: " + bluetoothPoints.toString() + " bluetooth and " + wifiPoints.toString() + " wifi points inserted for " + familyName + "/" + deviceName;
+                        String message = "added " + bluetoothPoints.toString() + " bluetooth and " + wifiPoints.toString() + " wifi points for " + familyName + "/" + deviceName;
+                        oneSecondTimer.resetCounter();
                         if (locationName.equals("") == false) {
                             message += " at " + locationName;
                         }
