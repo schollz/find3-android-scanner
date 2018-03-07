@@ -10,6 +10,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
@@ -61,12 +63,16 @@ public class ScanService extends Service {
     private JSONObject jsonBody = new JSONObject();
     private JSONObject bluetoothResults = new JSONObject();
     private JSONObject wifiResults = new JSONObject();
-
+    private JSONObject lastSensors = null;
+    private final Object lastSensorsLock = new Object();
+    // GPS scanning
+    private Location currentBestLocation = null;
 
     private String familyName = "";
     private String locationName = "";
     private String deviceName = "";
     private String serverAddress = "";
+    private boolean allowGPS = false;
 
     @Override
     public void onCreate() {
@@ -99,6 +105,8 @@ public class ScanService extends Service {
         familyName = intent.getStringExtra("familyName");
         locationName = intent.getStringExtra("locationName");
         serverAddress = intent.getStringExtra("serverAddress");
+        allowGPS = intent.getBooleanExtra("allowGPS", false);
+
         Log.d(TAG, "familyName: " + familyName);
 
         new java.util.Timer().schedule(
@@ -260,6 +268,78 @@ public class ScanService extends Service {
             sensors.put("bluetooth", bluetoothResults);
             sensors.put("wifi", wifiResults);
             jsonBody.put("s", sensors);
+            synchronized (lastSensorsLock) {
+                lastSensors = new JSONObject(jsonBody.toString());
+            }
+            final String mRequestBody = jsonBody.toString();
+            Log.d(TAG, mRequestBody);
+
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    Log.d(TAG,"allowGPS: " + allowGPS);
+                    if (response.contains("[need GPS]") && allowGPS) {
+                        sendLocation();
+                    }
+                    Log.d(TAG, response);
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e(TAG, error.toString());
+                }
+            }) {
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
+
+                @Override
+                public byte[] getBody() throws AuthFailureError {
+                    try {
+                        return mRequestBody == null ? null : mRequestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", mRequestBody, "utf-8");
+                        return null;
+                    }
+                }
+
+                @Override
+                protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                    String responseString = "";
+                    if (response != null) {
+                        responseString = new String(response.data);
+                    }
+                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+                }
+            };
+
+            queue.add(stringRequest);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void sendLocation() {
+        try {
+            Log.d(TAG,"sending current location");
+            Location currentLocation = getLastBestLocation();
+            String URL = serverAddress + "/gps";
+            JSONObject sensors = null;
+            synchronized (lastSensorsLock) {
+                sensors = new JSONObject(lastSensors.toString());
+            }
+            if (sensors == null) {
+                return;
+            }
+            JSONObject jsonBody = new JSONObject();
+            jsonBody.put("fingerprint", sensors);
+            JSONObject gps = new JSONObject();
+            gps.put("lat", currentLocation.getLatitude());
+            gps.put("lon", currentLocation.getLongitude());
+            gps.put("alt", currentLocation.getAltitude());
+            jsonBody.put("gps", gps);
             final String mRequestBody = jsonBody.toString();
             Log.d(TAG, mRequestBody);
 
@@ -293,9 +373,7 @@ public class ScanService extends Service {
                 protected Response<String> parseNetworkResponse(NetworkResponse response) {
                     String responseString = "";
                     if (response != null) {
-
-                        responseString = String.valueOf(response.statusCode);
-
+                        responseString = new String(response.data);
                     }
                     return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
                 }
@@ -304,6 +382,33 @@ public class ScanService extends Service {
             queue.add(stringRequest);
         } catch (JSONException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * @return the last know best location
+     */
+    private Location getLastBestLocation() {
+        LocationManager mLocationManager = (LocationManager)
+                getSystemService(Context.LOCATION_SERVICE);
+        Location locationGPS = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        Location locationNet = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+        long GPSLocationTime = 0;
+        if (null != locationGPS) {
+            GPSLocationTime = locationGPS.getTime();
+        }
+
+        long NetLocationTime = 0;
+
+        if (null != locationNet) {
+            NetLocationTime = locationNet.getTime();
+        }
+
+        if (0 < GPSLocationTime - NetLocationTime) {
+            return locationGPS;
+        } else {
+            return locationNet;
         }
     }
 }

@@ -26,6 +26,7 @@ public class AlarmReceiverLife extends BroadcastReceiver {
         String deviceName = intent.getStringExtra("deviceName");
         String locationName = intent.getStringExtra("locationName");
         String serverAddress = intent.getStringExtra("serverAddress");
+        boolean allowGPS = intent.getBooleanExtra("allowGPS",false);
         Log.d(TAG,"familyName: "+ familyName);
 
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -38,6 +39,7 @@ public class AlarmReceiverLife extends BroadcastReceiver {
         scanService.putExtra("deviceName",deviceName);
         scanService.putExtra("locationName",locationName);
         scanService.putExtra("serverAddress",serverAddress);
+        scanService.putExtra("allowGPS",allowGPS);
         try {
             context.startService(scanService);
         } catch (Exception e) {

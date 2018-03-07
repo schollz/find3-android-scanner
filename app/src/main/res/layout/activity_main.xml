@@ -122,6 +122,23 @@
                 android:inputType="textUri|textPersonName" />
         </LinearLayout>
 
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/relLayout7"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="10dp"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/allowGPS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Allow GPS (new locations only)" />
+    </LinearLayout>
+
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/relLayout2"
             android:layout_width="match_parent"
@@ -148,6 +165,8 @@
                 android:textOff="Start scan"
                 android:textOn="Stop scan" />
         </LinearLayout>
+
+
 
         <TextView
             android:id="@+id/textOutput"

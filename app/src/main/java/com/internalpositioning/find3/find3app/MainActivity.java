@@ -13,6 +13,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -28,6 +30,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
@@ -35,34 +38,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.HttpHeaderParser;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-
-import static com.internalpositioning.find3.find3app.AlarmReceiverLife.context;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -99,8 +84,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.d(TAG, "MainActivity.onCreate");
-
         // check permissions
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
@@ -119,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
         deviceNameEdit.setText(sharedPref.getString("deviceName", ""));
         EditText serverAddressEdit = (EditText) findViewById(R.id.serverAddress);
         serverAddressEdit.setText(sharedPref.getString("serverAddress", ((EditText) findViewById(R.id.serverAddress)).getText().toString()));
+        CheckBox checkBoxAllowGPS = (CheckBox) findViewById(R.id.allowGPS);
+        checkBoxAllowGPS.setChecked(sharedPref.getBoolean("allowGPS",false));
 
 
         AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.locationName);
@@ -185,7 +170,8 @@ public class MainActivity extends AppCompatActivity {
                         buttonView.toggle();
                         return;
                     }
-
+                    boolean allowGPS = ((CheckBox) findViewById(R.id.allowGPS)).isChecked();
+                    Log.d(TAG,"allowGPS is checked: "+allowGPS);
                     String locationName = ((EditText) findViewById(R.id.locationName)).getText().toString().toLowerCase();
 
                     CompoundButton trackingButton = (CompoundButton) findViewById(R.id.toggleScanType);
@@ -205,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("deviceName", deviceName);
                     editor.putString("serverAddress", serverAddress);
                     editor.putString("locationName", locationName);
+                    editor.putBoolean("allowGPS",allowGPS);
                     editor.commit();
 
                     rssi_msg.setText("running");
@@ -215,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
                     ll24.putExtra("deviceName", deviceName);
                     ll24.putExtra("serverAddress", serverAddress);
                     ll24.putExtra("locationName", locationName);
+                    ll24.putExtra("allowGPS",allowGPS);
                     recurringLl24 = PendingIntent.getBroadcast(MainActivity.this, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
                     alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                     alarms.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.currentThreadTimeMillis(), 60000, recurringLl24);
@@ -347,7 +335,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd HH:mm:ss");
                         Date resultdate = new Date(secondsAgo);
-                        String message = sdf.format(resultdate) + ": " + bluetoothPoints.toString() + " bluetooth and " + wifiPoints.toString() + " wifi points inserted for " + familyName + "/" + deviceName;
+//                        String message = sdf.format(resultdate) + ": " + bluetoothPoints.toString() + " bluetooth and " + wifiPoints.toString() + " wifi points inserted for " + familyName + "/" + deviceName;
+                        String message = Long.toString((System.currentTimeMillis() - secondsAgo)/1000) + " seconds ago: " + bluetoothPoints.toString() + " bluetooth and " + wifiPoints.toString() + " wifi points inserted for " + familyName + "/" + deviceName;
                         if (locationName.equals("") == false) {
                             message += " at " + locationName;
                         }
@@ -378,6 +367,8 @@ public class MainActivity extends AppCompatActivity {
         };
         mWebSocketClient.connect();
     }
+
+
 
 
 }
