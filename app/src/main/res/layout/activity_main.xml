@@ -95,7 +95,7 @@
             android:ems="10"
             android:gravity="center"
             android:inputType="textUri|textPersonName"
-            android:text="http://192.168.0.23:8003"
+            android:text="https://cloud.internalpositioning.com"
             android:textSize="12sp" />
 
     </LinearLayout>
