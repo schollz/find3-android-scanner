@@ -7,7 +7,11 @@ To get started with this app, use Android Studio 3+ and "Import Project" after d
 
 # Roadmap
 
-- [ ] Get locations for a family after it is typed in, and use those for autocompletion.
+- [x] Get locations for a family after it is typed in, and use those for autocompletion.
+
+# Documentation
+
+https://find3.internalpositioning.com/doc/tracking_your_phone.md
 
 # License
 
