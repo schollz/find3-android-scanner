@@ -141,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
         toggleButtonTracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                findViewById((R.id.progressBar1)).setVisibility(View.INVISIBLE);
                 TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
                 rssi_msg.setText("not running");
                 Log.d(TAG, "toggle set to false");
@@ -215,7 +214,6 @@ public class MainActivity extends AppCompatActivity {
                     recurringLl24 = PendingIntent.getBroadcast(MainActivity.this, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
                     alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                     alarms.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.currentThreadTimeMillis(), 60000, recurringLl24);
-                    findViewById((R.id.progressBar1)).setVisibility(View.VISIBLE);
                     timer = new Timer();
                     oneSecondTimer = new RemindTask();
                     timer.scheduleAtFixedRate(oneSecondTimer, 1000, 1000);
@@ -245,7 +243,6 @@ public class MainActivity extends AppCompatActivity {
                     myClickableUrl.setText("See your results in realtime: " + serverAddress + "/view/location/" + familyName + "/" + deviceName);
                     Linkify.addLinks(myClickableUrl, Linkify.WEB_URLS);
                 } else {
-                    findViewById((R.id.progressBar1)).setVisibility(View.INVISIBLE);
                     TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
                     rssi_msg.setText("not running");
                     Log.d(TAG, "toggle set to false");
