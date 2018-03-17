@@ -80,6 +80,10 @@ public class ScanService extends Service {
         if (wifi.isWifiEnabled() == false) {
             wifi.setWifiEnabled(true);
         }
+        // register wifi intent filter
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        registerReceiver(mWifiScanReceiver, intentFilter);
 
         try {
             // setup bluetooth
@@ -206,11 +210,43 @@ public class ScanService extends Service {
         } catch (Exception e) {
             Log.w(TAG, e.toString());
         }
+        try {
+            if (mWifiScanReceiver != null)
+                unregisterReceiver(mWifiScanReceiver);
+        } catch (Exception e) {
+            Log.w(TAG, e.toString());
+        }
         stopSelf();
         super.onDestroy();
 
     }
 
+    private final BroadcastReceiver mWifiScanReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context c, Intent intent) {
+            // This condition is not necessary if you listen to only one action
+            if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
+                Log.d(TAG, "timer off, trying to send data");
+                List<ScanResult> wifiScanList = wifi.getScanResults();
+                for (int i = 0; i < wifiScanList.size(); i++) {
+                    String name = wifiScanList.get(i).BSSID.toLowerCase();
+                    int rssi = wifiScanList.get(i).level;
+                    Log.v(TAG, "wifi: " + name + " => " + rssi + "dBm");
+                    try {
+                        wifiResults.put(name, rssi);
+                    } catch (Exception e) {
+                        Log.e(TAG, e.toString());
+                    }
+                }
+                sendData();
+                BTAdapter.cancelDiscovery();
+                BTAdapter = BluetoothAdapter.getDefaultAdapter();
+                synchronized (lock) {
+                    isScanning = false;
+                }
+            }
+        }
+    };
 
     private void doScan() {
         synchronized (lock) {
@@ -228,33 +264,6 @@ public class ScanService extends Service {
             Log.w(TAG, "started wifi scan false?");
         }
         Log.d(TAG, "started discovery");
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        // your code here
-                        Log.d(TAG, "timer off, trying to send data");
-                        List<ScanResult> wifiScanList = wifi.getScanResults();
-                        for (int i = 0; i < wifiScanList.size(); i++) {
-                            String name = wifiScanList.get(i).BSSID.toLowerCase();
-                            int rssi = wifiScanList.get(i).level;
-                            Log.v(TAG, "wifi: " + name + " => " + rssi + "dBm");
-                            try {
-                                wifiResults.put(name, rssi);
-                            } catch (Exception e) {
-                                Log.e(TAG, e.toString());
-                            }
-                        }
-                        sendData();
-                        BTAdapter.cancelDiscovery();
-                        BTAdapter = BluetoothAdapter.getDefaultAdapter();
-                        synchronized (lock) {
-                            isScanning = false;
-                        }
-                    }
-                },
-                9000
-        );
     }
 
     // bluetooth reciever
