@@ -96,8 +96,13 @@ public class MainActivity extends AppCompatActivity {
                             connectWebSocket();
                         }
                     }
-                    TextView rssi_msg = (TextView) findViewById(R.id.secondsAgo);
-                    rssi_msg.setText(counter + " seconds ago: ");
+                    TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
+                    String currentText = rssi_msg.getText().toString();
+                    if (currentText.contains("ago: ")) {
+                        String[] currentTexts = currentText.split("ago: ");
+                        currentText = currentTexts[1];
+                    }
+                    rssi_msg.setText(counter + " seconds ago: " + currentText);
                 }
             });
         }
@@ -166,9 +171,15 @@ public class MainActivity extends AppCompatActivity {
                         buttonView.toggle();
                         return;
                     }
+
                     String serverAddress = ((EditText) findViewById(R.id.serverAddress)).getText().toString().toLowerCase();
                     if (serverAddress.equals("")) {
                         rssi_msg.setText("server address cannot be empty");
+                        buttonView.toggle();
+                        return;
+                    }
+                    if (serverAddress.contains("http")!=true) {
+                        rssi_msg.setText("must include http or https in server name");
                         buttonView.toggle();
                         return;
                     }
@@ -343,7 +354,7 @@ public class MainActivity extends AppCompatActivity {
                         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd HH:mm:ss");
                         Date resultdate = new Date(secondsAgo);
 //                        String message = sdf.format(resultdate) + ": " + bluetoothPoints.toString() + " bluetooth and " + wifiPoints.toString() + " wifi points inserted for " + familyName + "/" + deviceName;
-                        String message = "added " + bluetoothPoints.toString() + " bluetooth and " + wifiPoints.toString() + " wifi points for " + familyName + "/" + deviceName;
+                        String message = "1 second ago: added " + bluetoothPoints.toString() + " bluetooth and " + wifiPoints.toString() + " wifi points for " + familyName + "/" + deviceName;
                         oneSecondTimer.resetCounter();
                         if (locationName.equals("") == false) {
                             message += " at " + locationName;
