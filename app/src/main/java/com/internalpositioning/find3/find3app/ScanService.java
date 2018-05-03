@@ -302,10 +302,12 @@ public class ScanService extends Service {
             if (allowGPS) {
                 JSONObject gps = new JSONObject();
                 Location loc = getLastBestLocation();
-                gps.put("lat",loc.getLatitude());
-                gps.put("lon",loc.getLongitude());
-                gps.put("alt",loc.getAltitude());
-                jsonBody.put("gps",gps);
+                if (loc != null) {
+                    gps.put("lat",loc.getLatitude());
+                    gps.put("lon",loc.getLongitude());
+                    gps.put("alt",loc.getAltitude());
+                    jsonBody.put("gps",gps);
+                }
             }
 
             final String mRequestBody = jsonBody.toString();
@@ -359,8 +361,10 @@ public class ScanService extends Service {
     private Location getLastBestLocation() {
         LocationManager mLocationManager = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
+
         Location locationGPS = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         Location locationNet = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
 
         long GPSLocationTime = 0;
         if (null != locationGPS) {
@@ -374,8 +378,10 @@ public class ScanService extends Service {
         }
 
         if (0 < GPSLocationTime - NetLocationTime) {
+            Log.d("GPS",locationGPS.toString());
             return locationGPS;
         } else {
+            Log.d("GPS",locationNet.toString());
             return locationNet;
         }
     }
